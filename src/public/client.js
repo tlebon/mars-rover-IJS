@@ -1,8 +1,12 @@
+// const { Map, List } = require('immutable');
+
+// TODO: change store to Map, updated updateStore Function
 let store = {
 	user: { name: 'Student' },
 	apod: '',
 	rovers: ['Curiosity', 'Opportunity', 'Spirit'],
 	roverData: {},
+	activeRover: 'Curiosity',
 };
 
 // add our markup to the page
@@ -20,7 +24,7 @@ const render = async (root, state) => {
 // create content
 const App = (state) => {
 	let { rovers, apod } = state;
-
+	// add content, add tabs which change rover
 	return `
         <header></header>
         <main>
@@ -89,28 +93,68 @@ const ImageOfTheDay = (apod) => {
         `;
 	}
 };
+// ------------------------------------------------------ Tabs
+const Tabs = (state) => {
+	const { rovers, roverData } = state;
+
+	const createTabSelectors = (rovers) => {
+		rovers.map(
+			(rover) =>
+				`<button onclick='changeRover(${rover})'>${rover}</button>`
+		);
+	};
+	if (!roverData[rovers[0]]) {
+		createRovers(state);
+	}
+	return `<div><div>
+    ${createTabSelectors(rovers)}
+    </div>
+    ${Tab(activeRover)}
+    </div>`;
+};
+
+const Tab = (rover) => {
+	return `<div class=${rover.name}>
+    <h2>${rover.name}</h2>
+    rover recent photos (carousel?)
+    photo date
+    rover launch date
+    rover landing date
+    status
+    </div>`;
+};
+
+// ------------------------------------------------------ Interactions
+
+const changeRover = (rover) => {
+	updateStore(store, { activeRover: rover });
+};
 
 // ------------------------------------------------------  API CALLS
 
 // Example API call
 const getImageOfTheDay = (state) => {
-	let { apod } = state;
+	// let { apod } = state;
 
 	fetch(`http://localhost:3000/apod`)
 		.then((res) => res.json())
 		.then((apod) => updateStore(store, { apod }));
-
-	return data;
 };
 
-const getRover = (state) => {
-	let { rovers } = state;
+const getRover = (rover) => {
+	// let { rovers } = state;
 
-	rovers.forEach((rover) =>
-		fetch(`http://localhost:3000/rover_data/${rover}`)
-			.then((res) => res.json())
-			.then((data) => updateStore(store, {data}))
+	let roverData = fetch(`http://localhost:3000/rover_data/${rover}`).then(
+		(res) => ({
+			[rover]: res.json(),
+		})
 	);
+	return roverData;
+};
 
-	return data;
+const createRovers = (state) => {
+	const { rovers } = state;
+	Promise.all(rovers.map(getRover))
+		.reduce((obj, curr) => Object.assign(obj, curr), {})
+		.then((data) => updateStore(store, { roverData: data }));
 };

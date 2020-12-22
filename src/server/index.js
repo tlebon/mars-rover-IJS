@@ -38,7 +38,7 @@ app.get('/rover_data/:rover', async (req, res) => {
 		let roverPhotos = await fetch(
 			`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?sol=${max_sol}&api_key=${process.env.API_KEY}`
 		).then((res) => res.json());
-		res.send({ roverData, roverPhotos });
+		res.send(Object.assign(roverData, roverPhotos));
 	} catch (err) {
 		console.log('error:', err);
 	}
