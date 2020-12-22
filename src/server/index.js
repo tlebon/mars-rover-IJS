@@ -27,18 +27,19 @@ app.get('/apod', async (req, res) => {
 });
 // API calls for rover manifest and photos
 // grabs the most recent date from manifest and then pull that date from photos.
-app.get('/rover_data/:rover', async (req, res) => {
+app.get('/rover-data/:rover', async (req, res) => {
 	const rover = req.params.rover;
 	try {
 		let roverData = await fetch(
 			`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${process.env.API_KEY}`
 		).then((res) => res.json());
-		const { max_sol } = roverData;
+		const manifest = roverData.photo_manifest;
+		const { max_sol } = manifest;
 
 		let roverPhotos = await fetch(
 			`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?sol=${max_sol}&api_key=${process.env.API_KEY}`
 		).then((res) => res.json());
-		res.send(Object.assign(roverData, roverPhotos));
+		res.send(Object.assign(manifest, roverPhotos));
 	} catch (err) {
 		console.log('error:', err);
 	}

@@ -14,6 +14,7 @@ const root = document.getElementById('root');
 
 const updateStore = (store, newState) => {
 	store = Object.assign(store, newState);
+	console.log(store);
 	render(root, store);
 };
 
@@ -32,6 +33,8 @@ const App = (state) => {
             <section>
                 <h3>Put things on the page!</h3>
                 <p>Here is an example section.</p>
+                ${createTabSelectors(rovers)}
+                ${Tabs(state)}
                 <p>
                     One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
                     the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
@@ -40,7 +43,6 @@ const App = (state) => {
                     explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
                     but generally help with discoverability of relevant imagery.
                 </p>
-                ${ImageOfTheDay(apod)}
             </section>
         </main>
         <footer></footer>
@@ -67,64 +69,36 @@ const Greeting = (name) => {
     `;
 };
 
-// Example of a pure function that renders infomation requested from the backend
-const ImageOfTheDay = (apod) => {
-	// If image does not already exist, or it is not from today -- request it again
-	const today = new Date();
-	const photodate = new Date(apod.date);
-	console.log(photodate.getDate(), today.getDate());
-
-	console.log(photodate.getDate() === today.getDate());
-	if (!apod || apod.date === today.getDate()) {
-		getImageOfTheDay(store);
-	}
-
-	// check if the photo of the day is actually type video!
-	if (apod.media_type === 'video') {
-		return `
-            <p>See today's featured video <a href="${apod.url}">here</a></p>
-            <p>${apod.title}</p>
-            <p>${apod.explanation}</p>
-        `;
-	} else {
-		return `
-            <img src="${apod.image.url}" height="350px" width="100%" />
-            <p>${apod.image.explanation}</p>
-        `;
-	}
-};
 // ------------------------------------------------------ Tabs
-const Tabs = (state) => {
-	const { rovers, roverData } = state;
 
-	const createTabSelectors = (rovers) => {
-		rovers.map(
-			(rover) =>
-				`<button onclick='changeRover(${rover})'>${rover}</button>`
-		);
-	};
+const createTabSelectors = (rovers) => {
+   return rovers.map(
+        (rover) =>
+            `<button onclick="changeRover('${rover}')">${rover}</button>`
+    ).join(' ');
+};
+const Tabs = (state) => {
+	const { rovers, roverData, activeRover } = state;
 	if (!roverData[rovers[0]]) {
 		createRovers(state);
 	}
-	return `<div><div>
-    ${createTabSelectors(rovers)}
-    </div>
-    ${Tab(activeRover)}
+	return `<div>
+    ${Tab(roverData[activeRover])}
     </div>`;
 };
 
 const Tab = (rover) => {
-	return `<div class=${rover.name}>
+	return rover?`<div class=${rover.name}>
     <h2>${rover.name}</h2>
     rover recent photos (carousel?)
     photo date
     rover launch date
     rover landing date
     status
-    </div>`;
+    </div>`: '';
 };
 
-// ------------------------------------------------------ Interactions
+// ------------------------------------------------------ Interaction
 
 const changeRover = (rover) => {
 	updateStore(store, { activeRover: rover });
@@ -132,29 +106,22 @@ const changeRover = (rover) => {
 
 // ------------------------------------------------------  API CALLS
 
-// Example API call
-const getImageOfTheDay = (state) => {
-	// let { apod } = state;
-
-	fetch(`http://localhost:3000/apod`)
-		.then((res) => res.json())
-		.then((apod) => updateStore(store, { apod }));
-};
-
 const getRover = (rover) => {
 	// let { rovers } = state;
 
-	let roverData = fetch(`http://localhost:3000/rover_data/${rover}`).then(
-		(res) => ({
-			[rover]: res.json(),
-		})
-	);
+	let roverData = fetch(`http://localhost:3000/rover-data/${rover}`)
+		.then((res) => res.json())
+		.then((data) => ({
+			[rover]: data,
+		}));
 	return roverData;
 };
 
 const createRovers = (state) => {
 	const { rovers } = state;
 	Promise.all(rovers.map(getRover))
-		.reduce((obj, curr) => Object.assign(obj, curr), {})
+		.then((data) =>
+			data.reduce((obj, curr) => Object.assign(obj, curr), {})
+		)
 		.then((data) => updateStore(store, { roverData: data }));
 };
