@@ -1,18 +1,16 @@
-// const { Map, List } = require('immutable');
-
 // TODO: change store to Map, updated updateStore Function
-let store = {
-	user: { name: 'Student' },
-	rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-	roverData: {},
+let store = Immutable.Map({
+	user: Immutable.Map({ name: 'Student' }),
+	rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
+	roverData: 'bloop',
 	activeRover: '',
-};
+});
 
 // add our markup to the page
 const root = document.getElementById('root');
 
 const updateStore = (store, newState) => {
-	store = Object.assign(store, newState);
+	store = store.merge(newState);
 	render(root, store);
 };
 
@@ -22,12 +20,12 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-	let { rovers } = state;
+	const rovers = state.get('rovers');
 	// add content, add tabs which change rover
 	return `
         <header></header>
         <main>
-            ${Greeting(store.user.name)}
+            ${Greeting(store.get('user').get('name'))}
             <section>
             <p>This is a dashboard for the mars rovers, please choose one to see some photos and information</p>
                 ${Tabs(rovers)}
@@ -72,14 +70,16 @@ const Tabs = (rovers) => {
 };
 
 const Tab = (store) => {
-	const { roverData, activeRover } = store;
-	const attrs = ['landing_date', 'launch_date', 'status'];
-
+	let activeRover = store.get('activeRover');
+	console.log(store);
+	const attrs = Immutable.List(['landing_date', 'launch_date', 'status']);
+	
 	if (activeRover) {
-		const rover = roverData[activeRover];
+		let roverData = store.get('roverData');
+		let rover = roverData.get(activeRover);
 		const randomPhoto = Math.floor(Math.random() * rover.photos.length);
 
-		return `<div class=${rover.name}>
+		return `<div class="rover">
         <h2>${rover.name}</h2>
 
         <img onclick="changeRover('${rover.name}')"src="${
@@ -133,14 +133,12 @@ const itemFancier = (item) => {
 // ------------------------------------------------------ Interaction
 
 const changeRover = (rover) => {
-	updateStore(store, { activeRover: rover });
+	updateStore(store, Immutable.Map({ activeRover: rover }));
 };
 
 // ------------------------------------------------------  API CALLS
 
 const getRover = (rover) => {
-	// let { rovers } = state;
-
 	let roverData = fetch(`http://localhost:3000/rover-data/${rover}`)
 		.then((res) => res.json())
 		.then((data) => ({
@@ -150,12 +148,12 @@ const getRover = (rover) => {
 };
 
 const createRovers = (state) => {
-	const { rovers } = state;
+	const rovers = state.get('rovers');
 	Promise.all(rovers.map(getRover))
 		.then((data) =>
-			data.reduce((obj, curr) => Object.assign(obj, curr), {})
+			data.reduce((obj, curr) => obj.merge(curr), Immutable.Map({}))
 		)
-		.then((data) => updateStore(store, { roverData: data }));
+		.then((data) => updateStore(store, Immutable.Map({ roverData: data })));
 };
 
 // ------------------------------------------------------ BONUS RANDOM DAY
@@ -164,7 +162,7 @@ const changeDay = (rover) => {
 	fetch(`http://localhost:3000/rover-photos/${rover}`)
 		.then((res) => res.json())
 		.then((data) =>
-			updateStore(store, {
+			updateStore(store, Immutable.Map{
 				roverData: { ...store.roverData, [rover]: data },
 			})
 		);
