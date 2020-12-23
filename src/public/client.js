@@ -22,7 +22,7 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-	let { rovers, apod } = state;
+	let { rovers } = state;
 	// add content, add tabs which change rover
 	return `
         <header></header>
@@ -30,8 +30,8 @@ const App = (state) => {
             ${Greeting(store.user.name)}
             <section>
             <p>This is a dashboard for the mars rovers, please choose one to see some photos and information</p>
-                ${createTabSelectors(rovers)}
-                ${Tabs(state)}
+                ${Tabs(rovers)}
+                ${Tab(state)}
             </section>
         </main>
         <footer></footer>
@@ -61,30 +61,24 @@ const Greeting = (name) => {
 
 // ------------------------------------------------------ Tabs
 // TODO: add active/selected state
-const createTabSelectors = (rovers) => {
-	return rovers
+const Tabs = (rovers) => {
+	let tabs = rovers
 		.map(
 			(rover) =>
 				`<button onclick="changeRover('${rover}')">${rover}</button>`
 		)
 		.join(' ');
+	return `<div class="tabs">${tabs}</div>`;
 };
 
-const Tabs = (state) => {
-	const { roverData, activeRover } = state;
+const Tab = (store) => {
+	const { roverData, activeRover } = store;
+	const attrs = ['landing_date', 'launch_date', 'status'];
 
 	if (activeRover) {
-		return `<div>
-        ${Tab(roverData[activeRover])}
-        </div>`;
-	} else return '';
-};
+		const rover = roverData[activeRover];
+		const randomPhoto = Math.floor(Math.random() * rover.photos.length);
 
-const Tab = (rover) => {
-	const attrs = ['landing_date', 'launch_date', 'status'];
-	const randomPhoto = Math.floor(Math.random() * rover.photos.length);
-
-	if (rover) {
 		return `<div class=${rover.name}>
         <h2>${rover.name}</h2>
 
@@ -92,36 +86,50 @@ const Tab = (rover) => {
 			rover.photos[randomPhoto].img_src
 		}" height="350px" width="100%" />
         
-        ${dateChecker(rover, randomPhoto)}
+        ${solChecker(rover, randomPhoto)}
         <div> Want a random day for this rover? 
         Click <button onclick="changeDay('${rover.name}')"> HERE </button>
         </div>
   
         <h3>Rover Info:</h3>
-        <ul>
-        ${listItem(attrs, rover)}
-        </ul>
+        ${listItems(attrs, rover)}
         </div>`;
 	} else return '';
 };
 
 // ------------------------------------------------------ Utilities
 
-const santizeKey = (key) =>
+const santizeItem = (key) =>
 	key.charAt(0).toUpperCase() + key.slice(1).split('_').join(' ');
 
-const listItem = (attrs, rover) =>
-	attrs
-		.map((item) => `<li>${santizeKey(item)}: ${rover[item]}</li>`)
+const listItems = (attrs, rover) => {
+	let items = attrs
+		.map(
+			(item) =>
+				`<li>${santizeItem(item)}: ${itemFancier(rover[item])}</li>`
+		)
 		.join('');
+	return `<ul>
+        ${items}
+        </ul>`;
+};
 
-const dateChecker = (rover, randomPhoto) => {
+const solChecker = (rover, randomPhoto) => {
 	if (rover.max_sol === rover.photos[randomPhoto].sol) {
 		return `<p>This is a random photo from the most recent day the rover took a picture ${rover.photos[randomPhoto].earth_date}</p>`;
 	} else
 		return ` <p>This is a random photo from ${rover.photos[randomPhoto].earth_date}</p>`;
 };
 
+const isDate = (date) => {
+	return new Date(date) !== 'Invalid Date' && !isNaN(new Date(date));
+};
+
+const itemFancier = (item) => {
+	if (isDate(item)) {
+		return `${new Date(item).toDateString()}`;
+	} else return santizeItem(item);
+};
 // ------------------------------------------------------ Interaction
 
 const changeRover = (rover) => {
