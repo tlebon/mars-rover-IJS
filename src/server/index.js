@@ -45,4 +45,25 @@ app.get('/rover-data/:rover', async (req, res) => {
 	}
 });
 
+// Get photos from a random day.
+app.get('/rover-photos/:rover', async (req, res) => {
+	const rover = req.params.rover;
+	try {
+		let roverData = await fetch(
+			`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${process.env.API_KEY}`
+		).then((res) => res.json());
+		const manifest = roverData.photo_manifest;
+        const { max_sol } = manifest;
+        
+		const randomDay = Math.floor(Math.random() * max_sol);
+		let roverPhotos = await fetch(
+			`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?sol=${randomDay}&api_key=${process.env.API_KEY}`
+        ).then((res) => res.json());
+
+		res.send(Object.assign(manifest, roverPhotos));
+	} catch (err) {
+		console.log('error:', err);
+	}
+});
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

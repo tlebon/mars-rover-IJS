@@ -3,10 +3,9 @@
 // TODO: change store to Map, updated updateStore Function
 let store = {
 	user: { name: 'Student' },
-	apod: '',
 	rovers: ['Curiosity', 'Opportunity', 'Spirit'],
 	roverData: {},
-	activeRover: 'Curiosity',
+	activeRover: '',
 };
 
 // add our markup to the page
@@ -14,7 +13,6 @@ const root = document.getElementById('root');
 
 const updateStore = (store, newState) => {
 	store = Object.assign(store, newState);
-	console.log(store);
 	render(root, store);
 };
 
@@ -31,18 +29,9 @@ const App = (state) => {
         <main>
             ${Greeting(store.user.name)}
             <section>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
+            <p>This is a dashboard for the mars rovers, please choose one to see some photos and information</p>
                 ${createTabSelectors(rovers)}
                 ${Tabs(state)}
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
             </section>
         </main>
         <footer></footer>
@@ -51,6 +40,7 @@ const App = (state) => {
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
+	createRovers(store);
 	render(root, store);
 });
 
@@ -60,7 +50,7 @@ window.addEventListener('load', () => {
 const Greeting = (name) => {
 	if (name) {
 		return `
-            <h1>Welcome, ${name}!</h1>
+            <h1>Mars Rover Dash</h1>
         `;
 	}
 
@@ -70,32 +60,63 @@ const Greeting = (name) => {
 };
 
 // ------------------------------------------------------ Tabs
-
+// TODO: add active/selected state
 const createTabSelectors = (rovers) => {
-   return rovers.map(
-        (rover) =>
-            `<button onclick="changeRover('${rover}')">${rover}</button>`
-    ).join(' ');
+	return rovers
+		.map(
+			(rover) =>
+				`<button onclick="changeRover('${rover}')">${rover}</button>`
+		)
+		.join(' ');
 };
+// TODO: renders twice on initial render- either fix or make curiosity load intially
 const Tabs = (state) => {
-	const { rovers, roverData, activeRover } = state;
-	if (!roverData[rovers[0]]) {
-		createRovers(state);
-	}
-	return `<div>
+	const { roverData, activeRover } = state;
+
+	if (activeRover) {
+		return `<div>
     ${Tab(roverData[activeRover])}
     </div>`;
+	} else return '';
 };
-
+// TODO: onclick, change photo? or carousel
 const Tab = (rover) => {
-	return rover?`<div class=${rover.name}>
+	const attrs = ['landing_date', 'launch_date', 'status'];
+	const randomPhoto = Math.floor(Math.random() * rover.photos.length);
+
+	const santizeKey = (key) =>
+		key.charAt(0).toUpperCase() +
+		key.slice(1).split('_').join(' ');
+
+	const listItem = (attrs) =>
+		attrs
+			.map((item) => `<li>${santizeKey(item)}: ${rover[item]}</li>`)
+			.join('');
+
+	const dateChecker = (rover) => {
+		if (rover.max_sol === rover.photos[randomPhoto].sol) {
+			return `<p>This is a random photo from the most recent day the rover took a picture ${rover.photos[randomPhoto].earth_date}</p>`;
+		} else
+			return ` <p>This is a random photo from ${rover.photos[randomPhoto].earth_date}</p>`;
+	};
+
+	if (rover) {
+		return `<div class=${rover.name}>
     <h2>${rover.name}</h2>
-    rover recent photos (carousel?)
-    photo date
-    rover launch date
-    rover landing date
-    status
-    </div>`: '';
+    <img onclick="changeRover('${rover.name}')"src="${
+			rover.photos[randomPhoto].img_src
+		}" height="350px" width="100%" />
+    ${dateChecker(rover)}
+    <div> Want a random day for this rover? 
+    Click <button onclick="changeDay('${rover.name}')"> HERE </button>
+    </div>
+  
+    <h3>Rover Info:</h3>
+    <ul>
+    ${listItem(attrs)}
+    </ul>
+    </div>`;
+	} else return '';
 };
 
 // ------------------------------------------------------ Interaction
@@ -124,4 +145,16 @@ const createRovers = (state) => {
 			data.reduce((obj, curr) => Object.assign(obj, curr), {})
 		)
 		.then((data) => updateStore(store, { roverData: data }));
+};
+
+// ------------------------------------------------------ BONUS RANDOM DAY
+
+const changeDay = (rover) => {
+	fetch(`http://localhost:3000/rover-photos/${rover}`)
+		.then((res) => res.json())
+		.then((data) =>
+			updateStore(store, {
+				roverData: { ...store.roverData, [rover]: data },
+			})
+		);
 };
