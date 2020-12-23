@@ -69,54 +69,57 @@ const createTabSelectors = (rovers) => {
 		)
 		.join(' ');
 };
-// TODO: renders twice on initial render- either fix or make curiosity load intially
+
 const Tabs = (state) => {
 	const { roverData, activeRover } = state;
 
 	if (activeRover) {
 		return `<div>
-    ${Tab(roverData[activeRover])}
-    </div>`;
+        ${Tab(roverData[activeRover])}
+        </div>`;
 	} else return '';
 };
-// TODO: onclick, change photo? or carousel
+
 const Tab = (rover) => {
 	const attrs = ['landing_date', 'launch_date', 'status'];
 	const randomPhoto = Math.floor(Math.random() * rover.photos.length);
 
-	const santizeKey = (key) =>
-		key.charAt(0).toUpperCase() +
-		key.slice(1).split('_').join(' ');
-
-	const listItem = (attrs) =>
-		attrs
-			.map((item) => `<li>${santizeKey(item)}: ${rover[item]}</li>`)
-			.join('');
-
-	const dateChecker = (rover) => {
-		if (rover.max_sol === rover.photos[randomPhoto].sol) {
-			return `<p>This is a random photo from the most recent day the rover took a picture ${rover.photos[randomPhoto].earth_date}</p>`;
-		} else
-			return ` <p>This is a random photo from ${rover.photos[randomPhoto].earth_date}</p>`;
-	};
-
 	if (rover) {
 		return `<div class=${rover.name}>
-    <h2>${rover.name}</h2>
-    <img onclick="changeRover('${rover.name}')"src="${
+        <h2>${rover.name}</h2>
+
+        <img onclick="changeRover('${rover.name}')"src="${
 			rover.photos[randomPhoto].img_src
 		}" height="350px" width="100%" />
-    ${dateChecker(rover)}
-    <div> Want a random day for this rover? 
-    Click <button onclick="changeDay('${rover.name}')"> HERE </button>
-    </div>
+        
+        ${dateChecker(rover, randomPhoto)}
+        <div> Want a random day for this rover? 
+        Click <button onclick="changeDay('${rover.name}')"> HERE </button>
+        </div>
   
-    <h3>Rover Info:</h3>
-    <ul>
-    ${listItem(attrs)}
-    </ul>
-    </div>`;
+        <h3>Rover Info:</h3>
+        <ul>
+        ${listItem(attrs, rover)}
+        </ul>
+        </div>`;
 	} else return '';
+};
+
+// ------------------------------------------------------ Utilities
+
+const santizeKey = (key) =>
+	key.charAt(0).toUpperCase() + key.slice(1).split('_').join(' ');
+
+const listItem = (attrs, rover) =>
+	attrs
+		.map((item) => `<li>${santizeKey(item)}: ${rover[item]}</li>`)
+		.join('');
+
+const dateChecker = (rover, randomPhoto) => {
+	if (rover.max_sol === rover.photos[randomPhoto].sol) {
+		return `<p>This is a random photo from the most recent day the rover took a picture ${rover.photos[randomPhoto].earth_date}</p>`;
+	} else
+		return ` <p>This is a random photo from ${rover.photos[randomPhoto].earth_date}</p>`;
 };
 
 // ------------------------------------------------------ Interaction
