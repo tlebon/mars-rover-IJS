@@ -1,38 +1,154 @@
 /* -------------------  MOBILE  --------------------- */
 
 body {
-  display: flex;
-  flex-direction: column;
-  font-family: Arial;
-  min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	font-family: Arial;
+	min-height: 100vh;
+	margin: 0;
 }
 
 header {
-  /* header styles */
+	/* header styles */
 }
 
 main {
-  flex: 1;
-  padding: 20px;
+	flex: 1;
+	/* padding: 20px; */
 }
 
 footer {
-  /* footer styles */
+	/* footer styles */
 }
+/* .removing {
+	opacity: 0;
+	transition: visibility 0s 2s, opacity 2s linear;
+} */
 
+.tabs {
+	background-color: #f44336;
+	padding: 0;
+	margin: 0;
+	/* border-bottom: 2px solid black; */
+}
+.tab-title {
+	background-color: #4caf50;
+	margin: 0;
+	color: white;
+	padding: 10px;
+	border-bottom: 2px solid black;
+}
+.tab-info {
+	background-color: #4caf50;
+	margin: 0;
+	color: white;
+	padding: 10px;
+	border-bottom: 2px solid black;
+}
+.tabs button {
+	background-color: #f44336;
+	color: white;
+	border: none;
+	border-right: 2px solid black;
+	margin-left: -4px;
+	outline: none;
+	font-weight: bold;
+	cursor: pointer;
+	padding: 14px 16px;
+	transition: 0.3s;
+	border-bottom: 2px solid black;
+}
+/* .tabs :first-child {
+	background-color: #4caf50;
+	border-bottom: 2px solid #4caf50;
+} */
+img {
+	height: 400px;
+	width: 100%;
+	/* padding: 10px; */
+	border: 10px solid black;
+	margin-bottom: -4px;
+}
+.active {
+	background-color: #4caf50 !important;
+	border-bottom: 2px solid #4caf50 !important;
+}
+.title {
+	/* background-color: #f44336; */
+	padding-top: 20px;
+	top: 0;
+	padding-left: 10px;
+	border-bottom: 2px solid black;
+	margin-top: 0;
+}
+#random-button {
+	background-color: #4caf50;
+	color: white;
+	border: 1px solid black;
+	outline: none;
+	cursor: pointer;
+	padding: 1px 4px;
+	transition: 0.3s;
+}
+#rover-info {
+	padding: 5px;
+}
+#tab {
+	display: flex;
+	flex-direction: column;
+}
+ul {
+	padding-bottom: 2px;
+	border-bottom: 2px solid black;
+}
 /* -------------------  TABLET  --------------------- */
 @media (min-width: 768px) {
-  /* use mobile */
+	img {
+		height: 400px;
+		width: auto;
+	}
+	#tab {
+		flex-direction: row;
+	}
+	/* #tab :nth-child(3) {
+		order: 2;
+	}
+	#tab :nth-child(2) {
+		order: 3;
+	} */
 }
 
 /* -------------------  DESKTOP  -------------------- */
 
 @media (min-width: 1224px) {
-  /* use mobile */
+	img {
+		height: 800px;
+		width: 100%;
+	}
+	#tab {
+		flex-direction: column;
+	}
+	#tab :nth-child(3) {
+		order: 2;
+	}
+	#tab :nth-child(2) {
+		order: 3;
+	}
+	.tab-title {
+		border-bottom: none;
+	}
 }
 
 /* -------------------  LARGE SCREENS  -------------- */
 
 @media (min-width: 1824px) {
-  /* use mobile */
+	img {
+		height: 800px;
+	}
 }
+/* #tab :nth-child(3) {
+	order: 2;
+}
+#tab :nth-child(2) {
+	order: 3;
+} */

@@ -1,11 +1,10 @@
-// const { Map, List } = require('immutable');
-
 // TODO: change store to Map, updated updateStore Function
 let store = {
 	user: { name: 'Student' },
-	rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-	roverData: {},
+	rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
+	roverData: null,
 	activeRover: '',
+	oldRover: '',
 };
 
 // add our markup to the page
@@ -23,15 +22,15 @@ const render = async (root, state) => {
 // create content
 const App = (state) => {
 	let { rovers } = state;
-	// add content, add tabs which change rover
+
 	return `
-        <header></header>
-        <main>
-            ${Greeting(store.user.name)}
+	<header>
+	<h1 class="title">Mars Rover Dash</h1>
+	</header>
+	<main>
             <section>
-            <p>This is a dashboard for the mars rovers, please choose one to see some photos and information</p>
-                ${Tabs(rovers)}
-                ${Tab(state)}
+			${Tabs(rovers)}
+			${Tab(state)}
             </section>
         </main>
         <footer></footer>
@@ -40,32 +39,16 @@ const App = (state) => {
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
-	createRovers(store);
-	render(root, store);
+	createRovers(store).then((store) => render(root, store));
 });
 
-// ------------------------------------------------------  COMPONENTS
-
-// Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
-const Greeting = (name) => {
-	if (name) {
-		return `
-            <h1>Mars Rover Dash</h1>
-        `;
-	}
-
-	return `
-        <h1>Hello!</h1>
-    `;
-};
-
 // ------------------------------------------------------ Tabs
-// TODO: add active/selected state
+
 const Tabs = (rovers) => {
 	let tabs = rovers
 		.map(
 			(rover) =>
-				`<button onclick="changeRover('${rover}')">${rover}</button>`
+				`<button id="${rover}-button"onclick="changeRover('${rover}')">${rover}</button>`
 		)
 		.join(' ');
 	return `<div class="tabs">${tabs}</div>`;
@@ -73,28 +56,35 @@ const Tabs = (rovers) => {
 
 const Tab = (store) => {
 	const { roverData, activeRover } = store;
-	const attrs = ['landing_date', 'launch_date', 'status'];
+	const attrs = Immutable.List(['landing_date', 'launch_date', 'status']);
 
 	if (activeRover) {
 		const rover = roverData[activeRover];
 		const randomPhoto = Math.floor(Math.random() * rover.photos.length);
 
-		return `<div class=${rover.name}>
-        <h2>${rover.name}</h2>
+		return `<div id="tab">
+        <h2 class="tab-title">${rover.name}</h2>
 
-        <img onclick="changeRover('${rover.name}')"src="${
+        <div class ="tab-piece"> <img onclick="changeRover('${
+			rover.name
+		}')"src="${
 			rover.photos[randomPhoto].img_src
-		}" height="350px" width="100%" />
-        
-        ${solChecker(rover, randomPhoto)}
-        <div> Want a random day for this rover? 
-        Click <button onclick="changeDay('${rover.name}')"> HERE </button>
-        </div>
-  
-        <h3>Rover Info:</h3>
-        ${listItems(attrs, rover)}
-        </div>`;
-	} else return '';
+		}" height: "400px" height:"400px"/>
+		</div>
+
+		<div class="tab-piece">
+        	<h3 class="tab-info">Rover Info</h3>
+			<div id="rover-info"> 
+        	${listItems(attrs, rover)}
+        	${solChecker(rover, randomPhoto)}
+			Want a random day for this rover? 
+        	Click <button id="random-button" onclick="changeDay('${
+				rover.name
+			}')"> HERE </button>
+		</div>	
+  	</div>
+</div>`;
+	} else return '<p> Please select a rover to see its info</p>';
 };
 
 // ------------------------------------------------------ Utilities
@@ -133,9 +123,27 @@ const itemFancier = (item) => {
 // ------------------------------------------------------ Interaction
 
 const changeRover = (rover) => {
-	updateStore(store, { activeRover: rover });
+	let oldRover = store.activeRover;
+	const tab = document.getElementById(`tab`);
+	if (tab) {
+		tab.className = 'removing';
+	}
+	updateStore(store, { oldRover: oldRover, activeRover: rover });
+	updateRover(rover);
 };
 
+const updateRover = (rover) => {
+	const currRover = document.getElementById(`${store.oldRover}-button`);
+	const newRover = document.getElementById(`${store.activeRover}-button`);
+
+	if (currRover) {
+		currRover.className = '';
+	}
+	if (currRover == newRover) {
+		currRover.className = 'active';
+	}
+	newRover.className = 'active';
+};
 // ------------------------------------------------------  API CALLS
 
 const getRover = (rover) => {
@@ -155,7 +163,8 @@ const createRovers = (state) => {
 		.then((data) =>
 			data.reduce((obj, curr) => Object.assign(obj, curr), {})
 		)
-		.then((data) => updateStore(store, { roverData: data }));
+		.then((data) => updateStore(store, { roverData: data }))
+		.catch((err) => console.log(err));
 };
 
 // ------------------------------------------------------ BONUS RANDOM DAY
