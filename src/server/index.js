@@ -14,19 +14,9 @@ app.use('/', express.static(path.join(__dirname, '../public')));
 
 // your API calls
 
-// example API call
-app.get('/apod', async (req, res) => {
-	try {
-		let image = await fetch(
-			`https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`
-		).then((res) => res.json());
-		res.send({ image });
-	} catch (err) {
-		console.log('error:', err);
-	}
-});
 // API calls for rover manifest and photos
 // grabs the most recent date from manifest and then pull that date from photos.
+// I decided to merge the two endpoints into one because I thought it would be better for getting the most recent photos. 
 app.get('/rover-data/:rover', async (req, res) => {
 	const rover = req.params.rover;
 	try {

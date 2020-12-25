@@ -8,28 +8,14 @@ body {
 	margin: 0;
 }
 
-header {
-	/* header styles */
-}
-
 main {
 	flex: 1;
-	/* padding: 20px; */
 }
-
-footer {
-	/* footer styles */
-}
-/* .removing {
-	opacity: 0;
-	transition: visibility 0s 2s, opacity 2s linear;
-} */
 
 .tabs {
 	background-color: #f44336;
 	padding: 0;
 	margin: 0;
-	/* border-bottom: 2px solid black; */
 }
 .tab-title {
 	background-color: #4caf50;
@@ -58,14 +44,11 @@ footer {
 	transition: 0.3s;
 	border-bottom: 2px solid black;
 }
-/* .tabs :first-child {
-	background-color: #4caf50;
-	border-bottom: 2px solid #4caf50;
-} */
+
 img {
 	height: 400px;
 	width: 100%;
-	/* padding: 10px; */
+
 	border: 10px solid black;
 	margin-bottom: -4px;
 }
@@ -74,7 +57,6 @@ img {
 	border-bottom: 2px solid #4caf50 !important;
 }
 .title {
-	/* background-color: #f44336; */
 	padding-top: 20px;
 	top: 0;
 	padding-left: 10px;
@@ -110,12 +92,6 @@ ul {
 	#tab {
 		flex-direction: row;
 	}
-	/* #tab :nth-child(3) {
-		order: 2;
-	}
-	#tab :nth-child(2) {
-		order: 3;
-	} */
 }
 
 /* -------------------  DESKTOP  -------------------- */
@@ -146,9 +122,3 @@ ul {
 		height: 800px;
 	}
 }
-/* #tab :nth-child(3) {
-	order: 2;
-}
-#tab :nth-child(2) {
-	order: 3;
-} */
