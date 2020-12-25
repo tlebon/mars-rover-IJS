@@ -71,7 +71,7 @@ const Tab = (store) => {
 
 	if (activeRover) {
 		const rover = roverData[activeRover];
-		const randomPhoto = Math.floor(Math.random() * rover.photos.length);
+		const randomPhoto = randomValue(rover.photos.length);
 
 		return `<div id="tab">
         <h2 class="tab-title">${rover.name}</h2>
@@ -90,9 +90,9 @@ const Tab = (store) => {
 			${solChecker(rover, randomPhoto)}
 			Want a new photo? Click on the image. <br>
 			Want a random day for this rover? 
-        	Click <button id="random-button" onclick="changeDay('${
-				rover.name
-			}')"> HERE </button>
+        	Click <button id="random-button" onclick="changeDay('${rover.name}',${
+			rover.max_sol
+		})"> HERE </button>
 		</div>	
   	</div>
 </div>`;
@@ -151,6 +151,11 @@ const itemFancier = (item) => {
 		return `${new Date(item).toDateString()}`;
 	} else return santizeItem(item);
 };
+/**
+ * Function to return random values for different situations.
+ * @param {number} value
+ */
+const randomValue = (value) => Math.floor(Math.random() * value);
 // ------------------------------------------------------ Interaction
 /**
  * This is for the user interaction on the page.
@@ -215,8 +220,9 @@ const createRovers = (state) => {
  * for more photo options.
  * @param {string} rover
  */
-const changeDay = (rover) => {
-	fetch(`http://localhost:3000/rover-photos/${rover}`)
+const changeDay = (rover, maxSol) => {
+	const randomSol = randomValue(maxSol);
+	fetch(`http://localhost:3000/rover-data/${rover}/${randomSol}`)
 		.then((res) => res.json())
 		.then((data) =>
 			updateStore(store, {
