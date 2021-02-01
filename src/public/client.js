@@ -20,7 +20,7 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-	const { rovers } = state;
+	const { rovers } = store;
 
 	return `
 	<header>
@@ -29,7 +29,7 @@ const App = (state) => {
 	<main>
             <section>
 			${Tabs(rovers)}
-			${Tab(state)}
+			${Tab(state, createGrid)}
             </section>
         </main>
         <footer></footer>
@@ -44,6 +44,14 @@ window.addEventListener('load', () => {
 });
 
 // ------------------------------------------------------ Tabs
+
+const createGrid = (arr) => {
+	return arr
+		.filter((_, index) => (index > 8 ? false : true))
+		.map((item) => `<img class="image" src="${item.img_src}"  />`)
+		.join('');
+};
+
 /**
  * Tabs creates the interactive component at the top of the page for displaying
  * the rovers names from the store.
@@ -65,7 +73,7 @@ const Tabs = (rovers) => {
  * If none is selected we will see the instructions instead.
  * @param {object} store
  */
-const Tab = (store) => {
+const Tab = (store, display) => {
 	const { roverData, activeRover } = store;
 	const attrs = Immutable.List(['landing_date', 'launch_date', 'status']);
 
@@ -76,11 +84,8 @@ const Tab = (store) => {
 		return `<div id="tab">
         <h2 class="tab-title">${rover.name}</h2>
 
-        <div class ="tab-piece"> <img onclick="changeRover('${
-			rover.name
-		}')"src="${
-			rover.photos[randomPhoto].img_src
-		}" height: "400px" height:"400px"/>
+		<div class ="tab-piece images">
+		${display(rover.photos)} 
 		</div>
 
 		<div class="tab-piece">
@@ -195,7 +200,8 @@ const getRover = (rover) => {
 		.then((res) => res.json())
 		.then((data) => ({
 			[rover]: data,
-		}));
+		}))
+		.catch((err) => console.log(err));
 	return roverData;
 };
 /**
@@ -228,5 +234,6 @@ const changeDay = (rover, maxSol) => {
 			updateStore(store, {
 				roverData: { ...store.roverData, [rover]: data },
 			})
-		);
+		)
+		.catch((err) => console.log(err));
 };

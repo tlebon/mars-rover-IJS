@@ -44,13 +44,19 @@ main {
 	transition: 0.3s;
 	border-bottom: 2px solid black;
 }
-
-img {
-	height: 400px;
-	width: 100%;
-
-	border: 10px solid black;
+.images {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
 	margin-bottom: -4px;
+	justify-content: center;
+}
+.image {
+	width: 100%;
+	border: 2px solid black;
+}
+.image:nth-child(1n + 2) {
+	display: none;
 }
 .active {
 	background-color: #4caf50 !important;
@@ -85,24 +91,29 @@ ul {
 }
 /* -------------------  TABLET  --------------------- */
 @media (min-width: 768px) {
-	img {
-		height: 400px;
-		width: auto;
+	.image {
+		width: calc(100% / 2);
 	}
-	#tab {
-		flex-direction: row;
+	.image:nth-child(1n + 2) {
+		display: inherit;
+	}
+	.image:nth-child(1n + 5) {
+		display: none;
 	}
 }
 
 /* -------------------  DESKTOP  -------------------- */
 
 @media (min-width: 1224px) {
-	img {
-		height: 800px;
-		width: 100%;
-	}
+
 	#tab {
 		flex-direction: column;
+	}
+	.image {
+		width: calc(100% / 3);
+	}
+	.image:nth-child(1n + 5) {
+		display: inherit;
 	}
 	#tab :nth-child(3) {
 		order: 2;
@@ -118,7 +129,10 @@ ul {
 /* -------------------  LARGE SCREENS  -------------- */
 
 @media (min-width: 1824px) {
-	img {
-		height: 800px;
+	.image {
+		width: calc(100% / 4);
+	}
+	.image:nth-child(1n + 5) {
+		display: inherit;
 	}
 }
