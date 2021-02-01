@@ -2,7 +2,7 @@ let store = {
 	user: { name: 'Student' },
 	rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
 	roverData: null,
-	activeRover: '',
+	activeRover: undefined,
 	oldRover: '',
 };
 
@@ -20,7 +20,7 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-	const { rovers } = store;
+	const { rovers, activeRover, roverData } = state;
 
 	return `
 	<header>
@@ -29,7 +29,7 @@ const App = (state) => {
 	<main>
             <section>
 			${Tabs(rovers)}
-			${Tab(state, createGrid)}
+			${Tab(activeRover, roverData, createGrid, createRoverInfo)}
             </section>
         </main>
         <footer></footer>
@@ -39,9 +39,11 @@ const App = (state) => {
 // listening for load event because page should load before any JS is called
 // I elected to include my BE call here, so that all data is loaded before the page displays.
 // Like a useEffect/componentDidMount
-window.addEventListener('load', () => {
-	createRovers(store).then((store) => render(root, store));
-});
+window.addEventListener('load', () =>
+	createRovers(store)
+		.then((store) => render(root, store))
+		.catch((error) => console.log(`Loading Error: ${error}`))
+);
 
 // ------------------------------------------------------ Tabs
 
@@ -52,6 +54,22 @@ const createGrid = (arr) => {
 		.join('');
 };
 
+const createRoverInfo = (attrs, rover) => {
+	const randomPhoto = randomValue(rover.photos.length);
+
+	return `
+	<div class="tab-piece">
+	<h3 class="tab-info">Rover Info</h3>
+	<div id="rover-info"> 
+	${listItems(attrs, rover)}
+	${solChecker(rover, randomPhoto)}
+	Want a new photo? Click on the image. <br>
+	Want a random day for this rover? 
+	Click <button id="random-button" onclick="changeDay('${rover.name}',${
+		rover.max_sol
+	})"> HERE </button>
+</div>`;
+};
 /**
  * Tabs creates the interactive component at the top of the page for displaying
  * the rovers names from the store.
@@ -73,14 +91,11 @@ const Tabs = (rovers) => {
  * If none is selected we will see the instructions instead.
  * @param {object} store
  */
-const Tab = (store, display) => {
-	const { roverData, activeRover } = store;
+const Tab = (activeRover, roverData, display, roverInfo) => {
 	const attrs = Immutable.List(['landing_date', 'launch_date', 'status']);
+	const rover = roverData[activeRover];
 
 	if (activeRover) {
-		const rover = roverData[activeRover];
-		const randomPhoto = randomValue(rover.photos.length);
-
 		return `<div id="tab">
         <h2 class="tab-title">${rover.name}</h2>
 
@@ -88,17 +103,8 @@ const Tab = (store, display) => {
 		${display(rover.photos)} 
 		</div>
 
-		<div class="tab-piece">
-        	<h3 class="tab-info">Rover Info</h3>
-			<div id="rover-info"> 
-        	${listItems(attrs, rover)}
-			${solChecker(rover, randomPhoto)}
-			Want a new photo? Click on the image. <br>
-			Want a random day for this rover? 
-        	Click <button id="random-button" onclick="changeDay('${rover.name}',${
-			rover.max_sol
-		})"> HERE </button>
-		</div>	
+	${roverInfo(attrs, rover)}
+
   	</div>
 </div>`;
 	} else return '<p> Please select a rover to see its info</p>';
@@ -112,6 +118,7 @@ const Tab = (store, display) => {
  */
 const santizeItem = (key) =>
 	key.charAt(0).toUpperCase() + key.slice(1).split('_').join(' ');
+
 /**
  * listItems takes in the active rover object and creates a list item for the tab for each attribute.
  * @param {string[]} attrs
@@ -201,7 +208,7 @@ const getRover = (rover) => {
 		.then((data) => ({
 			[rover]: data,
 		}))
-		.catch((err) => console.log(err));
+		.catch((err) => console.error(err));
 	return roverData;
 };
 /**
@@ -217,7 +224,7 @@ const createRovers = (state) => {
 			data.reduce((obj, curr) => Object.assign(obj, curr), {})
 		)
 		.then((data) => updateStore(store, { roverData: data }))
-		.catch((err) => console.log(err));
+		.catch((err) => console.error(err));
 };
 
 // ------------------------------------------------------ BONUS RANDOM DAY
@@ -235,5 +242,5 @@ const changeDay = (rover, maxSol) => {
 				roverData: { ...store.roverData, [rover]: data },
 			})
 		)
-		.catch((err) => console.log(err));
+		.catch((err) => console.error(err));
 };
